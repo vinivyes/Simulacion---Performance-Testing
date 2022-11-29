@@ -4,7 +4,7 @@ const sleep = async (ms) => {
     await new Promise((res) => {
         setTimeout(() => {
             res(true);
-        },ms)
+        }, ms)
     })
 }
 
@@ -17,7 +17,7 @@ const Run = async (solicitudes, log = false) => {
     let contador = 0;                         //Solicitudes completadas
 
 
-    do{
+    do {
         solicitudes--;
         ejecutar = solicitudes > 0;
         axios.get('https://api.pingtico.com:12001/v1/subscription/').then((res) => {
@@ -26,13 +26,13 @@ const Run = async (solicitudes, log = false) => {
             contador++;
         });
     }
-    while(ejecutar);
+    while (ejecutar);
 
-    while(esperarSolicitudes != contador){
+    while (esperarSolicitudes != contador) {
         await sleep(10);
     }
 
-    if(log){ console.log(`Tiempo de respuesta: ${(new Date().getTime() - inicioPrueba) / 1000}s - ${esperarSolicitudes} solicitudes`); }
+    if (log) { console.log(`Tiempo de respuesta: ${(new Date().getTime() - inicioPrueba) / 1000}s - ${esperarSolicitudes} solicitudes`); }
     return (new Date().getTime() - inicioPrueba) / 1000;
 }
 
@@ -47,26 +47,29 @@ const RunTests = async () => {
 
     process.stdout.write("\n");
 
-    let c = 1;
+    for (let batch of [1, 10, 100]) {
 
-    for(let i of Array.from({length: 50}, () => { return c++; })){
-        let res = await Run(1, false);
+        let c = 1;
 
-        if(res > max){
-            max = res;
+        for (let i of Array.from({ length: 50 }, () => { return c++; })) {
+            let res = await Run(batch, false);
+
+            if (res > max) {
+                max = res;
+            }
+
+            if (res < min) {
+                min = res;
+            }
+
+            process.stdout.clearLine(0);
+            process.stdout.cursorTo(0);
+            process.stdout.write(`Prueba #${i}/50 - Numero de solicitudes: ${batch}`);
         }
+        process.stdout.write("\n");
 
-        if(res < min){
-            min = res;
-        }
-
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
-        process.stdout.write(`Prueba #${i}/50`);
+        console.log(`Tiempo maximo: ${max}s - Tiempo minimo: ${min}s - Numero de solicitudes: ${batch}`);
     }
-    process.stdout.write("\n");
-
-    console.log(`Tiempo maximo: ${max}s - Tiempo minimo: ${min}s`);
-} 
+}
 
 RunTests();
