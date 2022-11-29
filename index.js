@@ -32,24 +32,30 @@ const Run = async (solicitudes, log = false) => {
         await sleep(10);
     }
 
-    if (log) { console.log(`Tiempo de respuesta: ${(new Date().getTime() - inicioPrueba) / 1000}s - ${esperarSolicitudes} solicitudes`); }
+    if (log) { console.log(`Tiempo de respuesta promedio: ${(new Date().getTime() - inicioPrueba) / 1000}s - ${esperarSolicitudes} solicitudes`); }
+
     return (new Date().getTime() - inicioPrueba) / 1000;
+}
+
+const Avg = (arr) => {
+    let sum = 0;
+    for(let i of arr){
+        sum += i;
+    }
+
+    return sum/arr.length;
 }
 
 const RunTests = async () => {
     let max = -1;
     let min = 999;
 
-    await Run(1, true);
-    await Run(10, true);
-    await Run(100, true);
-    await Run(1000, true);
-
-    process.stdout.write("\n");
-
     for (let batch of [1, 10, 100]) {
 
         let c = 1;
+        let arr = [];
+        max = 0;
+        min = 999;
 
         for (let i of Array.from({ length: 50 }, () => { return c++; })) {
             let res = await Run(batch, false);
@@ -65,10 +71,15 @@ const RunTests = async () => {
             process.stdout.clearLine(0);
             process.stdout.cursorTo(0);
             process.stdout.write(`Prueba #${i}/50 - Numero de solicitudes: ${batch}`);
+
+            arr.push(res);
         }
+
         process.stdout.write("\n");
 
-        console.log(`Tiempo maximo: ${max}s - Tiempo minimo: ${min}s - Numero de solicitudes: ${batch}`);
+        console.log(`\n| Promedio: ${Avg(arr).toPrecision(3)}s\n| Tiempo maximo: ${max}s \n| Tiempo minimo: ${min}s \n| Total: ${batch*50} solicitudes`);
+
+        process.stdout.write("\n");
     }
 }
 
