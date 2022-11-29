@@ -53,12 +53,15 @@ const RunTests = async () => {
     for (let batch of [1, 10, 100]) {
 
         let c = 1;
+        let sum = 0;
         let arr = [];
         max = 0;
         min = 999;
 
         for (let i of Array.from({ length: 50 }, () => { return c++; })) {
             let res = await Run(batch, false);
+
+            sum += res;
 
             if (res > max) {
                 max = res;
@@ -77,7 +80,7 @@ const RunTests = async () => {
 
         process.stdout.write("\n");
 
-        console.log(`\n| Promedio: ${Avg(arr).toPrecision(3)}s\n| Tiempo maximo: ${max}s \n| Tiempo minimo: ${min}s \n| Total: ${batch*50} solicitudes`);
+        console.log(`\n| Promedio: ${Avg(arr).toPrecision(3)}s\n| Tiempo maximo: ${max}s \n| Tiempo minimo: ${min}s \n| Total: ${batch*50} solicitudes [${sum.toPrecision(3)}s]`);
 
         process.stdout.write("\n");
     }
